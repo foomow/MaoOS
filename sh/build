@@ -1,0 +1,40 @@
+#!/bin/bash
+
+echo "assemble asm/mbr.asm"
+cd /root/MaoOS/src/asm
+nasm -f bin mbr.asm -o /root/MaoOS/bin/mbr.b
+
+echo "assemble asm/init.asm"
+nasm -f bin init.asm -o /root/MaoOS/bin/init.b
+
+cd /root/MaoOS/src/c
+echo "compile c/setdisk.c"
+gcc setdisk.c -o /root/MaoOS/bin/setdisk -std=gnu99
+echo "compile c/format.c"
+gcc format.c -o /root/MaoOS/bin/format -std=gnu99
+echo "compile c/transfile.c"
+gcc transfile.c -o /root/MaoOS/bin/transfile -std=gnu99
+echo "compile c/makeboot.c"
+gcc makeboot.c -o /root/MaoOS/bin/makeboot -std=gnu99
+
+cd /root/MaoOS/src/c/i386
+echo "compile c/i386/kernel.c"
+gcc kernel.c -o /root/MaoOS/bin/kernel.b -std=gnu99 -masm=intel -m32 -c
+
+cd /root/MaoOS/bin
+echo "reset disk"
+./setdisk -reset -device /dev/sdb
+
+echo "format disk"
+./format
+
+echo "install disk"
+./setdisk -install -device /dev/sdb -mfile /root/MaoOS/bin/mbr.b -ifile /root/MaoOS/bin/init.b
+
+echo "setup kernel"
+./makeboot kernel.b kernel.o
+./transfile -s kernel.o
+
+cd /root
+echo "All done"
+
