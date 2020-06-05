@@ -14,6 +14,7 @@ echo "compile c/format.c"
 gcc format.c -o /root/MaoOS/bin/format -std=gnu99
 echo "compile c/transfile.c"
 gcc transfile.c -o /root/MaoOS/bin/transfile -std=gnu99
+gcc md.c -o /root/MaoOS/bin/md -std=gnu99
 echo "compile c/makeboot.c"
 gcc makeboot.c -o /root/MaoOS/bin/makeboot -std=gnu99
 

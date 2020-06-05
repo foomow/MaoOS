@@ -107,10 +107,10 @@ uint32 get_total_sector(byte drv)
 }
 byte readbyte(byte drv,uint32 sector,uint16 offset)
 {
-	if(offset>255)
+	if(offset>512)
 	{
-		sector+=offset/0x100;
-		offset=offset%0x100;
+		sector+=offset/0x200;
+		offset=offset%0x200;
 	}
 	byte stat;
 	if(drv==DRV_MASTER)
@@ -151,12 +151,25 @@ uint16 readint16(byte drv,uint32 sector,uint16 offset)
 }
 uint32 readint32(byte drv,uint32 sector,uint16 offset)
 {
-	byte hi=readbyte(drv,sector,offset+3);
-	uint16 ret=hi;
+	byte hi=readbyte(drv,sector,offset+3);	
+	uint32 ret=hi;
 	ret=(ret<<8)+readbyte(drv,sector,offset+2);
 	ret=(ret<<8)+readbyte(drv,sector,offset+1);
 	ret=(ret<<8)+readbyte(drv,sector,offset);
 	return ret;
+}
+byte poll_IO()
+{
+	byte stat;
+	stat=inb(IO_STAT);
+	while(
+		!((stat&0x80)==0&&(stat&0x08)!=0)
+		&&!((stat&0x20)!=0||(stat&0x01)!=0)
+		)
+	{
+		stat=inb(IO_STAT);
+	}
+	return stat;
 }
 void readsector(byte* buff,byte drv,uint32 sector)
 {
@@ -172,11 +185,7 @@ void readsector(byte* buff,byte drv,uint32 sector)
 	outb(IO_LBA_M,(sector>>8)&0xFF);
 	outb(IO_LBA_H,(sector>>16)&0xFF);
 	outb(IO_COMM,0x20);
-	stat=inb(IO_COMM);
-	while((stat&8)==0&&(stat&1)==0&&stat!=0)
-	{
-		stat=inb(IO_COMM);
-	}
+	stat=poll_IO();
 	for(int i=0;i<256;i++)
 	{
 		uint32 data=inw(IO_DATA);
@@ -197,15 +206,10 @@ void writesector(byte* buff,byte drv,uint32 sector)
 	outb(IO_LBA_M,(sector>>8)&0xFF);
 	outb(IO_LBA_H,(sector>>16)&0xFF);
 	outb(IO_COMM,0x30);
-	stat=inb(IO_COMM);
-	while((stat&8)==0&&(stat&1)==0&&stat!=0)
-	{
-		stat=inb(IO_COMM);
-	}
+	stat=poll_IO();
 
 	for(int i=0;i<256;i++)
 	{
-
 		uint16 data=buff[i*2+1];
 		data=data<<8;
 		data+=buff[i*2];
@@ -213,131 +217,28 @@ void writesector(byte* buff,byte drv,uint32 sector)
 	}
 	outb(IO_COMM,0xE7);
 }
-void format(byte drv)
+void writebyte(uint16 offset,byte val,byte drv,uint32 sector)
 {
-	/*
 	byte buff[512];
-
-	buff[0]=20;
-	buff[1]=11;
-	buff[2]=11;
-	buff[3]=28;
-
-	get_cmos_date();
-	buff[4]=0x20;
-	buff[5]=cmos_year;
-	buff[6]=cmos_month;
-	buff[7]=cmos_day;
-	buff[8]=cmos_hour;
-	buff[9]=cmos_minute;
-	buff[10]=cmos_second;
-
-	buff[11]='M';
-	buff[12]='a';
-	buff[13]='o';
-	buff[14]='O';
-	buff[15]='S';
-	buff[16]=0;
-
-	writesector(buff,drv,19);
-	*/
+	readsector(buff,drv,sector);
+	buff[offset]=val;
+	writesector(buff,drv,sector);
 }
-void list_dir(char *path)
+void write16(uint16 offset,uint16 val,byte drv,uint32 sector)
 {
-	prints(current_path);
-	print_cr();
-	uint32 ft_offset=readint32(DRV_MASTER,19,36);
-	uint32 content_sec;
-	uint32 data_offset=0;
-	content_sec=readint32(DRV_MASTER,20+ft_offset,43+data_offset);
-	char name[16];
-	while(content_sec!=0)
-	{
-		for(int i=0;i<16;i++)
-		{
-			name[i]=readbyte(DRV_MASTER,content_sec,i);
-		}
-		prints(name);
-		uint16 len=get_len(name);
-		len=16-len;
-		while(len>0)
-		{
-			printc(' ');
-			len--;
-		}
-		prints("    ");
-		print_byte_hex(readbyte(DRV_MASTER,content_sec,34));
-		prints("    ");
-		print_u32(readbyte(DRV_MASTER,content_sec,16));
-		print_u32(readbyte(DRV_MASTER,content_sec,17));
-		prints("-");
-		byte v=readbyte(DRV_MASTER,content_sec,18);
-		if(v<10)printc('0');
-		print_u32(v);
-		prints("-");
-		v=readbyte(DRV_MASTER,content_sec,19);
-		if(v<10)printc('0');
-		print_u32(v);
-		prints(" ");
-		v=readbyte(DRV_MASTER,content_sec,20);
-		if(v<10)printc('0');
-		print_u32(v);
-		prints(":");
-		v=readbyte(DRV_MASTER,content_sec,21);
-		if(v<10)printc('0');
-		print_u32(v);
-		prints(":");
-		v=readbyte(DRV_MASTER,content_sec,22);
-		if(v<10)printc('0');
-		print_u32(v);
-		prints("    ");
-		print_u32(readint16(DRV_MASTER,content_sec,30));
-		print_cr();
-		data_offset+=4;
-		content_sec=readint32(DRV_MASTER,20+ft_offset,43+data_offset);
-	}
+	byte buff[512];
+	readsector(buff,drv,sector);
+	buff[offset++]=val&0xff;
+	buff[offset++]=(val>>8)&0xff;
+	writesector(buff,drv,sector);
 }
-uint16 get_dir_sector(char* dirname)
+void write32(uint16 offset,uint32 val,byte drv,uint32 sector)
 {
-	return 0;
-}
-uint16 get_file_sector(char* filename)
-{
-	uint32 ft_offset=readint32(DRV_MASTER,19,36);
-	uint32 content_sec;
-	uint32 data_offset=0;
-	content_sec=readint32(DRV_MASTER,20+ft_offset,43+data_offset);
-	char name[16];
-	while(content_sec!=0)
-	{
-		for(int i=0;i<16;i++)
-		{
-			name[i]=readbyte(DRV_MASTER,content_sec,i);
-		}
-		if(cmps(filename,name)==0)return content_sec;
-		data_offset+=4;
-		content_sec=readint32(DRV_MASTER,20+ft_offset,43+data_offset);
-	}
-	return 0;
-}
-uint16 readfile(char* filename,uint16 offset,byte *buff,uint16 length)
-{
-	uint16 sec=get_file_sector(filename);
-	int i=0;	
-	if(sec!=0)
-	{
-		offset+=35;
-		for(i=0;i<length;i++)
-		{
-			if(offset>=508)
-			{
-				uint32 next_sec=readint32(DRV_MASTER,sec,508);
-				if(next_sec==0)return i;
-				sec=next_sec;
-				offset=0;
-			}
-			buff[i]=readbyte(DRV_MASTER,sec,offset++);			
-		}
-	}
-	return i;
+	byte buff[512];
+	readsector(buff,drv,sector);
+	buff[offset++]=val&0xff;
+	buff[offset++]=(val>>8)&0xff;
+	buff[offset++]=(val>>16)&0xff;
+	buff[offset]=(val>>24)&0xff;
+	writesector(buff,drv,sector);
 }

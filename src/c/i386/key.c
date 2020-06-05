@@ -4,13 +4,7 @@ void _KEYPRESS()
 	asm("mov %0,al":"=a"(keycode));
 	receivekey(keycode);
 }
-void init_key()
-{
-	for(int i=0;i<256;i++)
-		keybuff[i]=0;
-	cur_key_read=0;
-	cur_key_write=0;	
-}
+
 void receivekey(uint8 scan_code)
 {	
 	char ret=0;

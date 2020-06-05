@@ -2,6 +2,7 @@
 #include "inc/output.h"
 #include "inc/string.h"
 #include "inc/disk_ata_lba28.h"
+#include "inc/file.h"
 #include "inc/time.h"
 #include "inc/key.h"
 #include "inc/cmd.h"
@@ -9,28 +10,20 @@
 #include "inc/welcome.h"
 
 
-
-
-
-
-
-
 void main()
 {
-	//init_output();
-	//init_time();
-	//init_key();
 	current_path="/";
 	welcome();
 	enable_cur();
 	show_cmd();
-
 	while(true)
 	{		
 		cmd();
 	}
 }
 
+
+#include "file.c"
 #include "asm.c"
 #include "output.c"
 #include "string.c"

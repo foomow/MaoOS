@@ -12,7 +12,6 @@ void _KEYPRESS();
 void _KEYPRESS();
 void receivekey(uint8 scan_code);
 char getkey();
-void init_key();
 
 byte cur_key_read=0;
 byte cur_key_write=0;

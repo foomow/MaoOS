@@ -1,8 +1,10 @@
 #include <stdio.h>
+#include <string.h>
 char dev_name[16];
 unsigned int fat_sector_count=0;
 unsigned int total_sector_count=0;
 unsigned int content_sector_count=0;
+unsigned int root_sector=0;
 
 struct file_hd{
 	char name[16];
@@ -22,8 +24,8 @@ struct file_hd{
 	char u_second;
 	unsigned int size;
 	char attr;
+	char reserved;
 };
-
 void write_header(FILE *fp,struct file_hd* header)
 {
 fwrite(&header->name,1,sizeof(header->name),fp);
@@ -45,9 +47,8 @@ fwrite(&header->u_second,1,sizeof(header->u_second),fp);
 
 fwrite(&header->size,1,sizeof(header->size),fp);
 fwrite(&header->attr,1,sizeof(header->attr),fp);
+fwrite(&header->reserved,1,sizeof(header->reserved),fp);
 }
-
-
 void get_dev_info(char* dev)
 {
 	int idx=0;
@@ -63,9 +64,9 @@ void get_dev_info(char* dev)
 	fread(&total_sector_count,1,sizeof(total_sector_count),fp);
 	fread(&fat_sector_count,1,sizeof(fat_sector_count),fp);
 	fread(&content_sector_count,1,sizeof(content_sector_count),fp);
+	root_sector=20+fat_sector_count;
 	fclose(fp);
 }
-
 unsigned int next_free_sector()
 {
 	FILE *fp=fopen(dev_name,"rb");
@@ -88,7 +89,6 @@ unsigned int next_free_sector()
 	fclose(fp);
 	return 20+fat_sector_count+d_sector_offset;
 }
-
 char set_fat(unsigned int sector_idx,char type)
 {
 	unsigned int sector_offset=sector_idx-20-fat_sector_count;
@@ -113,7 +113,74 @@ char set_fat(unsigned int sector_idx,char type)
 	return ft_slot;
 
 }
+char get_fat(unsigned int sector_idx)
+{
+	unsigned int sector_offset=sector_idx-20-fat_sector_count;
+	unsigned int offset=sector_offset/2;
+	char ft_slot=0;
+	FILE *fp=fopen(dev_name,"rb");
+	fseek(fp,20*512+offset,SEEK_SET);
+	fread(&ft_slot,1,sizeof(ft_slot),fp);
+	fclose(fp);
+	if(offset*2==sector_offset)
+	{
+		ft_slot=ft_slot&0x0F;
+	}else 
+	{
+		ft_slot=ft_slot&0xF0;
+	}
+	return ft_slot;
+}
 
 
 
+unsigned int get_child_sector(char *child_name,unsigned int parent_sec,char mask_attr)
+{
+	unsigned int ret=0;
+	if(parent_sec==0)parent_sec=root_sector;
+	FILE *fp=fopen(dev_name,"rb");
+	fseek(fp,512*parent_sec+34,SEEK_SET);
+	char attr;
+	fread(&attr,1,sizeof(attr),fp);
+	if((attr&0x03)==0)
+	{
+		unsigned int child_sec_offset=44;		
+		unsigned int child_sec;
+		fseek(fp,512*parent_sec+child_sec_offset,SEEK_SET);
+		fread(&child_sec,1,sizeof(child_sec),fp);
+		while(child_sec!=0xffffffff&&ret==0)
+		{
+			if(child_sec!=0)
+			{
+				fseek(fp,512*child_sec+34,SEEK_SET);
+				fread(&attr,1,sizeof(attr),fp);
+				if((attr&mask_attr)==(attr&03))
+				{
+					char name[16];
+					fseek(fp,512*child_sec,SEEK_SET);
+					fread(&name,1,sizeof(name),fp);
+					if(strcmp(child_name,name)==0){
+						ret= child_sec;
+						break;
+					}					
+				}			
+			}
+			if((child_sec_offset+4)>508)
+			{				
+				fseek(fp,512*parent_sec+508,SEEK_SET);
+				fread(&parent_sec,1,sizeof(parent_sec),fp);
+				if(parent_sec==0)return ret;
+				child_sec_offset=0;
+			}
+			else
+			{
+				child_sec_offset+=4;
+			}
+			fseek(fp,512*parent_sec+child_sec_offset,SEEK_SET);
+			fread(&child_sec,1,sizeof(child_sec),fp);
+		}
+	}
+	fclose(fp);
+	return ret;
+}
 

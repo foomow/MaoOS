@@ -1,8 +1,10 @@
 #define V_BASE 0xB8000
+#define FONT_COLOR_WHITE 0x0F
+#define FONT_COLOR_GREEN 0x0A
+#define FONT_COLOR_RED 0x04
 char hex_char[16]="0123456789ABCDEF";
-byte cl_pos=0;
-char cl_cache[256];
-void init_output();
+char font_color=FONT_COLOR_WHITE;
+
 void enable_cur();
 void disable_cur();
 

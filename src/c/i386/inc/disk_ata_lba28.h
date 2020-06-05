@@ -35,6 +35,7 @@ typedef struct file_header{
 	char u_second;
 	unsigned int size;
 	char attr;
+	char reserved;
 } FILE_HEADER;
 
 typedef struct io_register{
@@ -63,9 +64,8 @@ REG get_disk_reg();
 void show_disk_reg();
 void show_disk_data(byte drv,uint16 offset);
 void writesector(byte* buff,byte drv,uint32 sector);
+void writebyte(uint16 offset,byte val,byte drv,uint32 sector);
+void write16(uint16 offset,uint16 val,byte drv,uint32 sector);
+void write32(uint16 offset,uint32 val,byte drv,uint32 sector);
 void readsector(byte* buff,byte drv,uint32 sector);
-void format(byte drv);
-void list_dir(char *path);
-uint16 get_dir_sector(char* dirname);
-uint16 get_file_sector(char* filename);
-uint16 readfile(char* filename,uint16 offset,byte *buff,uint16 length);
+byte poll_IO();

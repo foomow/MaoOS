@@ -42,12 +42,13 @@ disk_load_kernel:
 
     mov ah,al
     and ah,0xff
-    jz protected_code.boot_error
+    jz protected_code.boot_error   
     
     call .poll
 
     mov ebx,19;19th is disk info
     call .read_sector
+    
 
     mov ebx,[io_buff+0x2c];
     mov dword [int_timer_addr],ebx
@@ -59,40 +60,40 @@ disk_load_kernel:
     add ebx,dword [io_buff+36] ;19:36 is fat length,so this line read first root dir sector
     call .read_sector
 
-    mov ebx,dword [io_buff+43]; this is first file in root dir,it must be the kernel
+    mov ebx,dword [io_buff+44]; this is first file in root dir,it must be the kernel
     call .read_sector
 
     mov esi, kernel_name
     mov edi, io_buff
-    mov ecx, 8
+    mov ecx, 9
     cld
     repe  cmpsb
     jne  protected_code.boot_error
-
+ 
     
     call .find_kernel    
     ret
 
     .find_kernel:
     mov ecx,dword [io_buff+30];get lenth of kernel file    
-    cmp ecx,473
+    cmp ecx,472
     jg .more_sector
 
     cld
-    mov esi, io_buff+35
+    mov esi, io_buff+36
     mov edi, 0x4000
     repe movsb
     ret
 
     .more_sector:
     push ecx
-    mov ecx,473
+    mov ecx,472
     cld
-    mov esi, io_buff+35
+    mov esi, io_buff+36
     mov edi, 0x4000
     repe movsb
     pop ecx
-    sub ecx,473
+    sub ecx,472
     
     .next_sector:
     mov eax,508

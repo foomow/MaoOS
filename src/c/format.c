@@ -133,9 +133,10 @@ void main()
 	header.u_second=now->tm_sec;
 	header.size=0;
 	header.attr=0;
+	header.reserved=0;
 
 	write_header(fp,&header);	
-	//. and .. dir
+	//.. and . dir
 	char dirinfo[4];
 	dirinfo[0]=0;
 	dirinfo[1]=0;
@@ -148,6 +149,12 @@ void main()
 	dirinfo[1]=(c_sector_idx>>8)&0xFF;
 	dirinfo[2]=(c_sector_idx>>16)&0xFF;
 	dirinfo[3]=(c_sector_idx>>24)&0xFF;
+	fwrite(&dirinfo,1,4,fp);
+
+	dirinfo[0]=0xFF;
+	dirinfo[1]=0xFF;
+	dirinfo[2]=0xFF;
+	dirinfo[3]=0xFF;
 	fwrite(&dirinfo,1,4,fp);
 
 	fclose(fp);

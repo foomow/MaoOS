@@ -1,9 +1,3 @@
-void init_output(){
-	for(int i=0;i<256;i++)
-		cl_cache[i]=0;
-	cur_pos=0;
-	cl_pos=0;
-}
 void enable_cur()
 {
 	outb(0x3D4, 0x0A);
@@ -39,13 +33,12 @@ void cls()
 }
 void scroll()
 {
-	volatile char *video = (volatile char*)(V_BASE+0xf00);
-
 	asm("mov esi,%0"::"a"(V_BASE+0xa0));
 	asm("mov edi,%0"::"a"(V_BASE));
 	asm("mov ecx,0xF00");
 	asm("rep movsb");
 
+	volatile char *video = (volatile char*)(V_BASE+0xf00);
 	for(int i=0;i<80;i++)
 	{
 		*video++=0;
@@ -62,7 +55,7 @@ void prints(const char* str)
 	}
 }
 void printc(char c)
-{
+{		
 	volatile char *video = (volatile char*)V_BASE+2*cur_pos;
 	if(c=='\n')
 	{
@@ -73,19 +66,18 @@ void printc(char c)
 	{
 		cur_pos+=80;
 		c=0;
-	}
+	}	
 	if(c!=0)
 	{
 		if(c<0x20&&c>0x7e)c=' ';
 		*video++ = c;
-		*video = 0x0F;	
+		*video = font_color;	
 		cur_pos++;
-	}
-	if(cur_pos>25*80)scroll();
+	}	
+	if(cur_pos>=25*80)scroll();	
 }
 void show_cmd()
 {
-	cur_pos=cur_pos-cur_pos%80;
 	volatile char *video = (volatile char*)V_BASE+2*cur_pos;
 	*video++ = ':';
 	*video++ = 0x0A;
@@ -111,8 +103,7 @@ void cmd_input(char c)
 }
 void print_cr()
 {
-	cur_pos=cur_pos-cur_pos%80+80;
-	if(cur_pos>=25*80)scroll();
+	printc('\n');
 }
 void print_byte_hex(byte v)
 {

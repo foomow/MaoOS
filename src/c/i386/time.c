@@ -1,14 +1,3 @@
-
-
-void init_time()
-{
-	cmos_year=0;
-	cmos_month=0;
-	cmos_day=0;
-	cmos_hour=0;
-	cmos_minute=0;
-	cmos_second=0;
-}
 void get_cmos_date()
 {
 	outb(0x70,0x0a);
