@@ -21,6 +21,14 @@ byte cmps(char *s1,char *s2)
 	}
 }
 
+byte set_str(char *str,char *content)
+{
+	while(*content!=0)
+	{
+		*str++=*content++;
+	}
+}
+
 uint16 get_len(char *s)
 {
 	uint16 ret=0;

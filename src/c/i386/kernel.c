@@ -12,7 +12,8 @@
 
 void main()
 {
-	current_path="/";
+	
+	set_str(current_path,"/");
 	welcome();
 	enable_cur();
 	show_cmd();
