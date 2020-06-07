@@ -195,9 +195,6 @@ void readsector(byte* buff,byte drv,uint32 sector)
 }
 void writesector(byte* buff,byte drv,uint32 sector)
 {
-	asm("push ax");
-	asm("push bx");
-	asm("push cx");
 	byte stat;
 	if(drv==DRV_MASTER)
 		outb(IO_DH,0xE0);
@@ -219,9 +216,7 @@ void writesector(byte* buff,byte drv,uint32 sector)
 		outw(IO_DATA,data);
 	}
 	outb(IO_COMM,0xE7);
-	asm("pop cx");
-	asm("pop bx");
-	asm("pop ax");
+	wait_cmos();
 }
 void writebyte(uint16 offset,byte val,byte drv,uint32 sector)
 {

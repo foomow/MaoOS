@@ -40,3 +40,16 @@ void print_time()
 	print_byte_hex(cmos_second);
 
 }
+uint16 month_days[12]={0,31,59,90,120,151,181,212,243,273,304,334};
+uint32 get_tick()//form 2000-01-01 00:00:00
+{
+	get_cmos_date();
+	uint16 leap_year_count=(cmos_year+3)/4;
+	if(cmos_year%4==0&&cmos_month>2)leap_year_count++;
+	uint16 day_count=cmos_year*365+month_days[cmos_month-1]+cmos_day-1+leap_year_count;
+	return day_count*24*60*60+cmos_hour*60*60+cmos_minute*60+cmos_second;
+}
+void wait_cmos()
+{
+	uint32 s=get_tick();
+}

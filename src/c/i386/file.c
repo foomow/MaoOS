@@ -384,7 +384,7 @@ char get_fat(uint32 sector)
 	uint32 fat_sector = 20 + off / 1024;
 	uint32 fat_offset = (off % 1024) / 2;
 	byte ret = readbyte(DRV_MASTER, fat_sector, fat_offset);
-	if (fat_offset % 2 == 0)
+	if (fat_offset*2 == off%1024)
 	{
 		return (ret & 0xf0) >> 4;
 	}
@@ -400,7 +400,7 @@ void set_fat(uint32 sector, char type)
 	uint32 fat_sector = 20 + off / 1024;
 	uint32 fat_offset = (off % 1024) / 2;
 	byte ret = readbyte(DRV_MASTER, fat_sector, fat_offset);
-	if (fat_offset % 2 != 0)
+	if (fat_offset*2 == off%1024)
 	{
 		ret = ret & 0x0f;
 		ret = ret | ((type & 0x0f) << 4);
@@ -432,7 +432,7 @@ void makedir(char *name)
 	}
 
 	dest_file_sec = get_free_sector();
-	set_fat(dest_file_sec, 4);
+	set_fat(dest_file_sec, 4);	
 	get_cmos_date();
 	FILE_HEADER header;
 	for (int i = 0; i < 16; i++)
@@ -510,6 +510,7 @@ void makedir(char *name)
 	if (content_sec == 0xffffffff)
 	{
 		write32(data_offset, dest_file_sec, DRV_MASTER, dest_dir_sec);
+		data_offset += 4;
 		if (data_offset >= 508)
 		{
 			uint32 next_sec = readint32(DRV_MASTER, dest_dir_sec, 508);
@@ -517,10 +518,6 @@ void makedir(char *name)
 				return;
 			dest_dir_sec = next_sec;
 			data_offset = 0;
-		}
-		else
-		{
-			data_offset += 4;
 		}
 		write32(data_offset, 0xffffffff, DRV_MASTER, dest_dir_sec);
 	}
@@ -546,6 +543,7 @@ void makefile(char *name,char *content)
 	}
 
 	dest_file_sec = get_free_sector();
+	
 	set_fat(dest_file_sec, 3);
 	get_cmos_date();
 	FILE_HEADER header;
@@ -610,6 +608,7 @@ void makefile(char *name,char *content)
 	if (content_sec == 0xffffffff)
 	{
 		write32(data_offset, dest_file_sec, DRV_MASTER, dest_dir_sec);
+		data_offset += 4;
 		if (data_offset >= 508)
 		{
 			uint32 next_sec = readint32(DRV_MASTER, dest_dir_sec, 508);
@@ -617,10 +616,6 @@ void makefile(char *name,char *content)
 				return;
 			dest_dir_sec = next_sec;
 			data_offset = 0;
-		}
-		else
-		{
-			data_offset += 4;
 		}
 		write32(data_offset, 0xffffffff, DRV_MASTER, dest_dir_sec);
 	}
