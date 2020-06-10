@@ -18,10 +18,13 @@ gcc md.c -o /root/MaoOS/bin/md -std=gnu99
 echo "compile c/makeboot.c"
 gcc makeboot.c -o /root/MaoOS/bin/makeboot -std=gnu99
 
+echo "compile c/app.c"
+gcc app.c -o /root/MaoOS/bin/app.o -std=gnu99 -masm=intel -m32 -c -fno-asynchronous-unwind-tables
+
 cd /root/MaoOS/src/c/i386
 echo "compile c/i386/kernel.c"
 gcc kernel.c -o /root/MaoOS/bin/kernel.b -std=gnu99 -masm=intel -m32 -c
-gcc app.c -o /root/MaoOS/bin/app.o -std=gnu99 -masm=intel -m32 -c -fno-asynchronous-unwind-tables
+
 
 cd /root/MaoOS/bin
 echo "reset disk"
