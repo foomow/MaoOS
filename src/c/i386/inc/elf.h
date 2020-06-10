@@ -1,12 +1,34 @@
+/* Type for a 16-bit quantity.  */
 typedef unsigned short Elf32_Half;
+typedef unsigned short Elf64_Half;
+
+/* Types for signed and unsigned 32-bit quantities.  */
 typedef unsigned int Elf32_Word;
 typedef	int  Elf32_Sword;
+typedef unsigned int Elf64_Word;
+typedef	int  Elf64_Sword;
+
+/* Types for signed and unsigned 64-bit quantities.  */
 typedef unsigned long long Elf32_Xword;
 typedef	long long  Elf32_Sxword;
+typedef unsigned long long Elf64_Xword;
+typedef	long long  Elf64_Sxword;
+
+/* Type of addresses.  */
 typedef unsigned int Elf32_Addr;
+typedef unsigned long long Elf64_Addr;
+
+/* Type of file offsets.  */
 typedef unsigned int Elf32_Off;
+typedef unsigned long long Elf64_Off;
+
+/* Type for section indices, which are 16-bit quantities.  */
 typedef unsigned short Elf32_Section;
+typedef unsigned short Elf64_Section;
+
+/* Type for version symbol information.  */
 typedef Elf32_Half Elf32_Versym;
+typedef Elf64_Half Elf64_Versym;
 
 /* The ELF file header.  This appears at the start of every ELF file.  */
 
