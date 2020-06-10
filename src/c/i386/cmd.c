@@ -158,6 +158,14 @@ void cmd()
 							del(get_arg(1));
 						}
 					}
+					if (cmps(cli_cmd, "elf") == 0)
+					{
+						if (arg_count == 2)
+						{
+							syntax_error = 0;
+							get_elf_header(get_arg(1));
+						}
+					}
 					if (syntax_error != 0)
 					{
 						font_color = FONT_COLOR_RED;

@@ -1,13 +1,4 @@
-#include "inc/asm.h"
-#include "inc/output.h"
-#include "inc/string.h"
-#include "inc/disk_ata_lba28.h"
-#include "inc/file.h"
-#include "inc/time.h"
-#include "inc/key.h"
-#include "inc/cmd.h"
-#include "inc/process.h"
-#include "inc/welcome.h"
+#include "inc/kernel.h"
 
 
 void main()
@@ -34,3 +25,4 @@ void main()
 #include "cmd.c"
 #include "welcome.c"
 #include "process.c"
+#include "elf.c"

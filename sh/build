@@ -23,7 +23,7 @@ gcc app.c -o /root/MaoOS/bin/app.o -std=gnu99 -masm=intel -m32 -c -fno-asynchron
 
 cd /root/MaoOS/src/c/i386
 echo "compile c/i386/kernel.c"
-gcc kernel.c -o /root/MaoOS/bin/kernel.b -std=gnu99 -masm=intel -m32 -c
+gcc kernel.c -o /root/MaoOS/bin/kernel.b -std=gnu99 -masm=intel -m32 -c -fno-asynchronous-unwind-tables
 
 
 cd /root/MaoOS/bin

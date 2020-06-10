@@ -1,2 +1,11 @@
-
-void _APIC_TIMER();
+#include "asm.h"
+#include "output.h"
+#include "string.h"
+#include "disk_ata_lba28.h"
+#include "file.h"
+#include "time.h"
+#include "key.h"
+#include "cmd.h"
+#include "process.h"
+#include "welcome.h"
+#include "elf.h"

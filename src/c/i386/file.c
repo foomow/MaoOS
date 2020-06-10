@@ -187,14 +187,15 @@ uint32 get_file_sector(uint32 dir_sector, char *filename)
 	}
 	return 0;
 }
-uint16 readfile(char *filename, uint16 offset, byte *buff, uint16 length)
+
+uint32 readfile(char *filename, uint32 offset, byte *buff, uint32 length)
 {
 	char name_tmp[256];
 	get_filename_dir(filename, name_tmp);
 	uint32 dir_sector = get_dir_sector(name_tmp);
 	get_filename_file(filename, name_tmp);
 	uint32 sec = get_file_sector(dir_sector, name_tmp);
-	uint16 filesize = readint16(DRV_MASTER, sec, 30);
+	uint32 filesize = readint32(DRV_MASTER, sec, 30);
 	if ((length + offset) > filesize)
 	{
 		if (offset > filesize)
@@ -202,7 +203,7 @@ uint16 readfile(char *filename, uint16 offset, byte *buff, uint16 length)
 		length = filesize - offset;
 	}
 
-	int i = 0;
+	uint32 i = 0;
 	if (sec != 0)
 	{
 		offset += 36;
