@@ -73,7 +73,7 @@ unsigned int next_free_sector()
 	fseek(fp,20*512,SEEK_SET);
 	unsigned int d_sector_offset=0;
 	char ft_slot=0;
-	for(int i=0;i<fat_sector_count;i++)
+	for(int i=0;i<fat_sector_count*512;i++)
 	{
 		fread(&ft_slot,1,sizeof(ft_slot),fp);
 		if(((ft_slot&0xF0)>>4)==0)
