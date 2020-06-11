@@ -3,7 +3,7 @@
 
 void main()
 {
-	
+	init_mem();	
 	set_str(current_path,"/");
 	welcome();
 	enable_cur();
@@ -16,6 +16,7 @@ void main()
 
 
 #include "file.c"
+#include "mem.c"
 #include "asm.c"
 #include "output.c"
 #include "string.c"

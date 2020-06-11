@@ -2,6 +2,12 @@
 real_code:
     [BITS 16]    
     .main:
+    
+    .enable_A20:
+    in al, 0x92
+    or al, 2
+    out 0x92, al
+
     call .check_mem
 
     cli
@@ -15,8 +21,6 @@ real_code:
     mov eax, cr0
     or eax, 1
     mov cr0, eax
-
-
 
     jmp 0x08:protected_code
 

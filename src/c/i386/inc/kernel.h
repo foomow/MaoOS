@@ -1,4 +1,5 @@
 #include "asm.h"
+#include "mem.h"
 #include "output.h"
 #include "string.h"
 #include "disk_ata_lba28.h"

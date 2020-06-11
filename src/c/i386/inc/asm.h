@@ -1,5 +1,3 @@
-
-
 #define uint8 unsigned char
 #define uint unsigned char
 #define byte unsigned char
