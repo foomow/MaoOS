@@ -42,8 +42,9 @@ char *get_arg(uint8 idx)
 	}
 	return 0;
 }
+char* pointer;
 void cmd()
-{
+{	
 	char key = getkey();
 	if (key != 0)
 	{
@@ -164,6 +165,36 @@ void cmd()
 						{
 							syntax_error = 0;
 							get_elf_header(get_arg(1));
+						}
+					}
+					if (cmps(cli_cmd, "mem") == 0)
+					{
+						if (arg_count == 1)
+						{
+							syntax_error = 0;
+							list_mem();
+						}
+						if (arg_count == 2)
+						{
+							if(cmps(get_arg(1),"-d")==0)
+							{
+								syntax_error = 0;
+								detect_mem();
+							}
+							if(cmps(get_arg(1),"-a")==0)
+							{
+								syntax_error = 0;
+								pointer=take_data_mem(20,99);
+								prints("block add at:");
+								print_dword_hex((uint32)pointer);
+							}
+							if(cmps(get_arg(1),"-r")==0)
+							{
+								syntax_error = 0;
+								free_mem((uint32)pointer,99);
+								prints("block remove at:");
+								print_dword_hex((uint32)pointer);
+							}
 						}
 					}
 					if (syntax_error != 0)

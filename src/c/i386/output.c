@@ -124,6 +124,11 @@ void print_dword_hex(uint32 v)
 	print_word_hex((short)((v&0xffff0000)>>16));
 	print_word_hex((short)(v&0xffff));
 }
+void print_qword_hex(uint64 v)
+{
+	print_dword_hex((uint32)((v&0xffffffff00000000)>>32));
+	print_dword_hex((uint32)(v&0xffffffff));
+}
 void print_u32(uint32 val)
 {
 	char c[11];
@@ -132,7 +137,7 @@ void print_u32(uint32 val)
 		char d=val%10;	
 		c[pos++]=d+'0';
 		val=val/10;
-	}while(val>10);
+	}while(val>=10);
 	if(val>0)c[pos++]=val+'0';
 	
 	while(pos-->0)

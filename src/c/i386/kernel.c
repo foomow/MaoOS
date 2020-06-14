@@ -1,19 +1,16 @@
 #include "inc/kernel.h"
 
-
 void main()
-{
-	init_mem();	
+{		
 	set_str(current_path,"/");
-	welcome();
+	welcome();	
 	enable_cur();
-	show_cmd();
+	show_cmd();	
 	while(true)
 	{		
 		cmd();
 	}
 }
-
 
 #include "file.c"
 #include "mem.c"

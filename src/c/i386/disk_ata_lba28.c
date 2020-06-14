@@ -2,7 +2,7 @@
 REG get_disk_reg()
 {
 	REG ret;
-	ret.Data=inb(IO_DATA);
+	ret.Data=inw(IO_DATA);
 	ret.ErrorFeatures=inb(IO_ERR);
 	ret.Sector_Count=inb(IO_SEC_C);
 	ret.Sector_Number=inb(IO_SEC_N);
@@ -14,24 +14,16 @@ REG get_disk_reg()
 }
 void show_disk_reg()
 {
-	REG reg=get_reg();
-	char str0[7]="Data: ";
-	char str1[11]="     E/F: ";
-	char str2[6]="S_C: ";
-	char str3[11]="     S_N: ";
-	char str4[6]="C_L: ";
-	char str5[11]="     C_H: ";
-	char str6[6]="D_H: ";
-	char str7[11]="     COM: ";
+	REG reg=get_disk_reg();
 
-	prints(str0);print_word_hex(reg.Data);
-	prints(str1);print_byte_hex(reg.ErrorFeatures);print_cr();
-	prints(str2);print_byte_hex(reg.Sector_Count);
-	prints(str3);print_byte_hex(reg.Sector_Number);print_cr();
-	prints(str4);print_byte_hex(reg.Cylinder_Low);
-	prints(str5);print_byte_hex(reg.Cylinder_High);print_cr();
-	prints(str6);print_byte_hex(reg.DriveHead);
-	prints(str7);print_byte_hex(reg.StatusCommand);print_cr();
+	prints("Data: ");print_word_hex(reg.Data);
+	prints("     E/F: ");print_byte_hex(reg.ErrorFeatures);print_cr();
+	prints("S_C: ");print_byte_hex(reg.Sector_Count);
+	prints("     S_N: ");print_byte_hex(reg.Sector_Number);print_cr();
+	prints("C_L: ");print_byte_hex(reg.Cylinder_Low);
+	prints("     C_H: ");print_byte_hex(reg.Cylinder_High);print_cr();
+	prints("D_H: ");print_byte_hex(reg.DriveHead);
+	prints("     COM: ");print_byte_hex(reg.StatusCommand);print_cr();
 }
 void show_disk_data(byte drv,uint16 offset)
 {
@@ -83,21 +75,17 @@ uint32 get_total_sector(byte drv)
 	outb(IO_SEC_N,0);
 	outb(IO_CYL_L,0);
 	outb(IO_CYL_H,0);
-
 	outb(IO_COMM,0xEC);
-	byte ret=inb(IO_COMM);
-	while((ret&8)==0&&(ret&1)==0&&ret!=0)
-	{
-		ret=inb(IO_COMM);
-	}
+
+	byte ret=poll_IO(IO_COMM);
 	if((ret&1)==0&&ret!=0)
 	{
-		for(int i=0;i<60;i++)get_reg();
-		REG reg=get_reg();
+		for(int i=0;i<60;i++)get_disk_reg();
+		REG reg=get_disk_reg();
 		uint16 low=reg.Data;
-		reg=get_reg();
+		reg=get_disk_reg();
 		uint16 high=reg.Data;
-		uint32 ret=(high<<16)+low;
+		uint32 ret=(high<<16)|low;
 		return ret;
 	}
 	else

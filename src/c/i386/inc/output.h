@@ -20,5 +20,6 @@ void print_cr();
 void print_byte_hex(byte v);
 void print_word_hex(uint16 v);
 void print_dword_hex(uint32 v);
+void print_qword_hex(uint64 v);
 
 void print_u32(uint32 val);

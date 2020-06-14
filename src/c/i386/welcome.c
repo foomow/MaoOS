@@ -12,14 +12,20 @@ void welcome()
 	prints(" MM | M/  MM |MM    MM |MM    MM/ MM    MM/ MM    MM/ \n");
 	prints(" MM/      MM/  MMMMMMM/  MMMMMM/   MMMMMM/   MMMMMM/  \n");
 	
+
 	print_cr();
-	
-	print_cr();
-	show_cmd();
 	prints("MaoOS v1.01 - By Mao 2020\n");
 	get_cmos_date();
-	show_cmd();
 	print_time();
+	print_cr();	
+
 	print_cr();
+	uint32 disk_space=get_total_sector(DRV_MASTER);
+	prints("DISK SPACE:");
+	print_u32(disk_space/2);
+	prints(" k\n");
+	init_mem();
+	print_cr();
+		
 
 }

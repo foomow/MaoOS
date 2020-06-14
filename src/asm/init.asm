@@ -24,7 +24,7 @@ real_code:
 
     jmp 0x08:protected_code
 
-    memsize equ 0x8000
+    
 
     .gdt_info: 
         dw .gdt_end-.gtd_start-1
@@ -71,51 +71,54 @@ real_code:
 
 
     .check_mem:
-    mov di, memsize+4          ; Set di to 0x8004. Otherwise this code will get stuck in `int 0x15` after some entries are fetched 
-	xor ebx, ebx		; ebx must be 0 to start
-	xor bp, bp		; keep an entry count in bp
-	mov edx, 0x0534D4150	; Place "SMAP" into edx
+    push es    
+    mov di, memsize+4
+	xor ebx, ebx
+	xor bp, bp
+    mov es,ebx
+	mov edx, 0x0534D4150
 	mov eax, 0xe820
-	mov [es:di + 20], dword 1	; force a valid ACPI 3.X entry
-	mov ecx, 24		; ask for 24 bytes
+	mov [es:di + 20], dword 1
+	mov ecx, 24
 	int 0x15
-	jc short .error	; carry set on first call means "unsupported function"
-	mov edx, 0x0534D4150	; Some BIOSes apparently trash this register?
-	cmp eax, edx		; on success, eax must have been reset to "SMAP"
+	jc short .error
+	mov edx, 0x0534D4150
+	cmp eax, edx
 	jne short .error
-	test ebx, ebx		; ebx = 0 implies list is only 1 entry long (worthless)
+	test ebx, ebx
 	je short .error
 	jmp short .check_ent
 
     .read_next:
-	mov eax, 0xe820		; eax, ecx get trashed on every int 0x15 call
-	mov [es:di + 20], dword 1	; force a valid ACPI 3.X entry
-	mov ecx, 24		; ask for 24 bytes again
+	mov eax, 0xe820
+	mov [es:di + 20], dword 1
+	mov ecx, 24
 	int 0x15
-	jc short .count_got		; carry set means "end of list already reached"
-	mov edx, 0x0534D4150	; repair potentially trashed register
+	jc short .count_got
+	mov edx, 0x0534D4150
 
     .check_ent:
-	jcxz .skipempty		; skip any 0 length entries
-	cmp cl, 20		; got a 24 byte ACPI 3.X response?
+	jcxz .skipempty
+	cmp cl, 20
 	jbe short .empty_got
-	test byte [es:di + 20], 1	; if so: is the "ignore this data" bit clear?
+	test byte [es:di + 20], 1
 	je short .skipempty
 
     .empty_got:
-	mov ecx, [es:di + 8]	; get lower uint32_t of memory region length
-	or ecx, [es:di + 12]	; "or" it with upper uint32_t to test for zero
-	jz .skipempty		; if length uint64_t is 0, skip entry
-	inc bp			; got a good entry: ++count, move to next storage spot
+	mov ecx, [es:di + 8]
+	or ecx, [es:di + 12]
+	jz .skipempty
+	inc bp
 	add di, 24
 
     .skipempty:
-	test ebx, ebx		; if ebx resets to 0, list is complete
+	test ebx, ebx
 	jne short .read_next
 
     .count_got:
-	mov [memsize], bp	; store the entry count
-	clc			; there is "jc" on end of list to this point, so the carry must be cleared
+	mov [memsize], bp
+	clc
+    pop es
 	ret
 
     .error:
@@ -204,6 +207,7 @@ done db 'Launch kernel...',0
 .addr_table:
     int_timer_addr     equ 0x00002900
     int_key_addr       equ 0x00002908
+    memsize            equ 0x00002910
 
     io_buff equ 0x00003700;0x200byte for a sector,so buff will end up to 0x3900
     kb_buff equ 0x00003900;kb buff start at there,and last byte(0x39ff)is the key_cursor
